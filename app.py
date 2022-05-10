@@ -205,7 +205,7 @@ if __name__ == "__main__":
    options.chain_length =vmsChainLength
    options.parallel = vmsParallel
    options.hardware_mapping = 'regular'  # If you have an Adafruit HAT: 'adafruit-hat'
-   options.gpio_slowdown = 3
+   options.gpio_slowdown = 2
    matrix = RGBMatrix(options = options)
    matrix.brightness = vmsbrightness	
    scheduler = BackgroundScheduler()
