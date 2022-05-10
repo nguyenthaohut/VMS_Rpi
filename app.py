@@ -43,6 +43,9 @@ def setimage():
    img = payload["img"][0]#get post json
    #dict_data = json.dumps(json_data)#conver json to dict
    print('-------------------------------')
+   VMSData.ClearAllImage()
+   VMSData.InsertImage(ImageID,img, DisplayOrder, DisplayInterval)
+   VMSData.ClearAllLastDisplayTime()
    img= base64.b64decode(img)
    #image_file ='stop.bmp'
    #image = Image.open(image_file)
