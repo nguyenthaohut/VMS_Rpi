@@ -36,7 +36,7 @@ options = RGBMatrixOptions()
 @app.route("/")
 def index():
    return render_template('home.html')
-@app.route("/setimage",methods=["GET","POST"])
+@app.route("/setimage",methods=["POST"])
 def setimage():
    global image
    payload = request.form.to_dict(flat = False)
@@ -44,6 +44,9 @@ def setimage():
    #dict_data = json.dumps(json_data)#conver json to dict
    print('-------------------------------')
    VMSData.ClearAllImage()
+   ImageID=1
+   DisplayOrder =1
+   DisplayInterval = 30
    VMSData.InsertImage(ImageID,img, DisplayOrder, DisplayInterval)
    VMSData.ClearAllLastDisplayTime()
    img= base64.b64decode(img)
@@ -56,7 +59,7 @@ def setimage():
    image.thumbnail((matrix.width, matrix.height), Image.ANTIALIAS)
    matrix.SetImage(image.convert('RGB'))
    return "1"
-@app.route("/setSetting",methods=["GET","POST"])
+@app.route("/setSetting",methods=["POST"])
 def setSetting():
    global image
    try:      
@@ -77,17 +80,25 @@ def setSetting():
 def getbrightness():
    global vmsbrightness
    return  str(vmsbrightness)
-@app.route("/setbrightness")
+@app.route("/setbrightness",methods=["POST"])
 def setbrightness():
    global image
    global vmsbrightness
    global matrix
-   payload = request.form.to_dict(flat = False)
-   vmsbrightness = int(payload["brightness"][0])#get post json
-   matrix.brightness = vmsbrightness
-   matrix.SetImage(image.convert('RGB'))
-   return  str(vmsbrightness)        
-@app.route("/setMultiImage",methods=["GET","POST"])
+   try: 
+      payload = request.form.to_dict(flat = False)
+      vmsbrightness = int(payload["brightness"][0])#get post json
+      if vmsbrightness < 1: 
+         vmsbrightness = 1
+      if vmsbrightness >100: 
+         vmsbrightness =100
+      matrix.brightness = vmsbrightness
+      matrix.SetImage(image.convert('RGB'))
+      return  str(vmsbrightness)        
+   except:
+      logging.exception('Got exception on main handler')
+   return "-1"   
+@app.route("/setMultiImage",methods=["POST"])
 def setMultiImage():
    global image
    try:      
@@ -112,11 +123,11 @@ def setMultiImage():
    except:
       logging.exception('Got exception on main handler')
    return  str(VMSData.GetNumberofDisplayingRecord())     
-@app.route("/getcount")
+@app.route("/getcount",methods=["POST"])
 def getcount():
    return  str(VMSData.GetNumberofDisplayingRecord())   
 
-@app.route("/clearAll")
+@app.route("/clearAll",methods=["POST"])
 def clear():
    VMSData.ClearAllImage()
    return "1"
@@ -184,7 +195,8 @@ def DoScheduleDisplay():
             image.thumbnail((matrix.width, matrix.height), Image.ANTIALIAS)
             matrix.SetImage(image.convert('RGB'))
    else:    
-      print("Not set CurrentLastDisplayTime")	
+      print("Not set CurrentLastDisplayTime")
+      CurrentImage=1	
 
 if __name__ == "__main__":
    BoardVMSID =''
