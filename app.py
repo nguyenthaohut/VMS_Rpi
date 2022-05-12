@@ -23,6 +23,7 @@ vmsParallel = 2
 vmsbrightness =20
 image = []
 CurrentImage =1
+CurrentImageName =''
 BoardVMSID =''
 # Configuration for the matrix
 options = RGBMatrixOptions()
@@ -36,29 +37,6 @@ options = RGBMatrixOptions()
 @app.route("/")
 def index():
    return render_template('home.html')
-@app.route("/setimage",methods=["POST"])
-def setimage():
-   global image
-   payload = request.form.to_dict(flat = False)
-   img = payload["img"][0]#get post json
-   #dict_data = json.dumps(json_data)#conver json to dict
-   print('-------------------------------')
-   VMSData.ClearAllImage()
-   ImageID=1
-   DisplayOrder =1
-   DisplayInterval = 30
-   VMSData.InsertImage(ImageID,img, DisplayOrder, DisplayInterval)
-   VMSData.ClearAllLastDisplayTime()
-   img= base64.b64decode(img)
-   #image_file ='stop.bmp'
-   #image = Image.open(image_file)
-   image_file = io.BytesIO(img)
-   image = Image.open(image_file)
-
-   # Make image fit our screen.
-   image.thumbnail((matrix.width, matrix.height), Image.ANTIALIAS)
-   matrix.SetImage(image.convert('RGB'))
-   return "1"
 @app.route("/setSetting",methods=["POST"])
 def setSetting():
    global image
@@ -97,16 +75,47 @@ def setbrightness():
       return  str(vmsbrightness)        
    except:
       logging.exception('Got exception on main handler')
-   return "-1"   
+   return "-1"  
+@app.route("/setimage",methods=["POST"])
+def setimage():
+   global image
+   global CurrentImageName
+   payload = request.form.to_dict(flat = False)
+   img = payload["img"][0]#get post json
+   imgname = payload["imgname"][0]#get post json
+   if CurrentImageName == imgname:
+      return '-1'
+   #dict_data = json.dumps(json_data)#conver json to dict
+   print('-------------------------------')
+   VMSData.ClearAllImage()
+   ImageID=1
+   DisplayOrder =1
+   DisplayInterval = 30
+   VMSData.InsertImage(ImageID,img, DisplayOrder, DisplayInterval)
+   VMSData.ClearAllLastDisplayTime()
+   img= base64.b64decode(img)
+   #image_file ='stop.bmp'
+   #image = Image.open(image_file)
+   image_file = io.BytesIO(img)
+   image = Image.open(image_file)
+
+   # Make image fit our screen.
+   image.thumbnail((matrix.width, matrix.height), Image.ANTIALIAS)
+   matrix.SetImage(image.convert('RGB'))
+   return "1"    
 @app.route("/setMultiImage",methods=["POST"])
 def setMultiImage():
    global image
+   global CurrentImageName
    try:      
       payload = request.form.to_dict(flat = False)
       ImageID = payload["ImageID"][0]
       img = payload["img"][0]#get post json
       DisplayOrder = int(payload["DisplayOrder"][0])
       DisplayInterval = int(payload["DisplayInterval"][0])
+      imgname = payload["imgname"][0]#get post json
+      if CurrentImageName == imgname:
+         return '-1'
       #dict_data = json.dumps(json_data)#conver json to dict
       print('-------------------------------')
       VMSData.InsertImage(ImageID,img, DisplayOrder, DisplayInterval)
